@@ -1,0 +1,38 @@
+[project]
+name = "aiomost-tools"
+version = "0.1.0"
+description = "Async tools for building Mattermost bots"
+readme = "README.md"
+authors = [
+    {name = "IliaPr",email = "ilya.prianichnikov@gmail.com"}
+]
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.28.1,<0.29.0"
+]
+
+[project.optional-dependencies]
+fastapi = [
+    "fastapi>=0.139.0,<0.140.0",
+    "uvicorn>=0.30.0,<1.0.0"
+]
+redis = [
+    "redis>=5.0.0,<7.0.0"
+]
+websocket = [
+    "websockets>=12.0,<16.0"
+]
+all = [
+    "fastapi>=0.139.0,<0.140.0",
+    "uvicorn>=0.30.0,<1.0.0",
+    "redis>=5.0.0,<7.0.0",
+    "websockets>=12.0,<16.0"
+]
+
+[tool.poetry]
+packages = [{ include = "aiomost" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
