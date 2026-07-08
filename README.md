@@ -45,25 +45,6 @@ pip install "aiomost-tools[fastapi,websocket,redis] @ git+https://github.com/Ili
 pip install "aiomost-tools[all] @ git+https://github.com/IliaPr/aiomost.git"
 ```
 
-Для production лучше фиксировать tag или commit:
-
-```bash
-pip install "aiomost-tools[fastapi,websocket] @ git+https://github.com/IliaPr/aiomost.git@v0.1.0"
-```
-
-Пример для `requirements.txt`:
-
-```text
-aiomost-tools[fastapi,websocket] @ git+https://github.com/IliaPr/aiomost.git@v0.1.0
-```
-
-Пример для Poetry:
-
-```toml
-[tool.poetry.dependencies]
-aiomost-tools = { git = "https://github.com/IliaPr/aiomost.git", tag = "v0.1.0", extras = ["fastapi", "websocket"] }
-```
-
 ### Опциональные зависимости
 
 | Extra | Зависимости | Назначение |
@@ -171,13 +152,6 @@ app = bot_app.create_fastapi_app()
 | `PUBLIC_BASE_URL` | Нет | Публичный URL приложения для callback-ов кнопок. |
 | `REDIS_URL` | Нет | Redis URL для state storage. |
 
-### Production notes
-
-- Используй HTTPS для публичного callback URL.
-- Не храни bot token в коде; передавай его через secrets или переменные окружения.
-- Запускай ASGI-приложение за reverse proxy или ingress.
-- Для горизонтального масштабирования state storage должен быть внешним, например Redis.
-
 ## English
 
 ### Installation
@@ -209,24 +183,6 @@ To install every optional integration:
 pip install "aiomost-tools[all] @ git+https://github.com/IliaPr/aiomost.git"
 ```
 
-For production, pin a tag or commit:
-
-```bash
-pip install "aiomost-tools[fastapi,websocket] @ git+https://github.com/IliaPr/aiomost.git@v0.1.0"
-```
-
-`requirements.txt` example:
-
-```text
-aiomost-tools[fastapi,websocket] @ git+https://github.com/IliaPr/aiomost.git@v0.1.0
-```
-
-Poetry example:
-
-```toml
-[tool.poetry.dependencies]
-aiomost-tools = { git = "https://github.com/IliaPr/aiomost.git", tag = "v0.1.0", extras = ["fastapi", "websocket"] }
-```
 
 ### Optional Dependencies
 
@@ -335,9 +291,3 @@ Supported variables:
 | `PUBLIC_BASE_URL` | No | Public application URL for button callbacks. |
 | `REDIS_URL` | No | Redis URL for state storage. |
 
-### Production Notes
-
-- Use HTTPS for the public callback URL.
-- Do not store bot tokens in source code; use secrets or environment variables.
-- Run the ASGI application behind a reverse proxy or ingress.
-- For horizontal scaling, use external state storage such as Redis.
