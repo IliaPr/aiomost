@@ -35,6 +35,8 @@ nav:
   - Начало работы:
       - Установка: getting-started/installation.md
       - Конфигурация: getting-started/configuration.md
+  - Руководства:
+      - Отправка сообщений: guides/sending-messages.md
 
 markdown_extensions:
   - admonition
