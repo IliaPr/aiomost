@@ -2,7 +2,7 @@
 
 Асинхронный Python-инструментарий для создания Mattermost-ботов.
 
-[Начать работу](#быстрый-старт){ .md-button .md-button--primary }
+[Установить](getting-started/installation.md){ .md-button .md-button--primary }
 [GitHub](https://github.com/IliaPr/aiomost){ .md-button }
 
 ## Возможности
@@ -13,20 +13,6 @@
 - получение событий через WebSocket;
 - интеграция с FastAPI;
 - хранение состояний пользователей в Redis.
-
-## Установка
-
-=== "Основные возможности"
-
-    ```bash
-    pip install "aiomost-tools @ git+https://github.com/IliaPr/aiomost.git"
-    ```
-
-=== "Все интеграции"
-
-    ```bash
-    pip install "aiomost-tools[all] @ git+https://github.com/IliaPr/aiomost.git"
-    ```
 
 ## Быстрый старт
 

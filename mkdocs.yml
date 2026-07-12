@@ -32,6 +32,8 @@ theme:
 
 nav:
   - Главная: index.md
+  - Начало работы:
+      - Установка: getting-started/installation.md
 
 markdown_extensions:
   - admonition
