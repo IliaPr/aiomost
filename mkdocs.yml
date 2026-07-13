@@ -54,11 +54,8 @@ plugins:
   - i18n:
       docs_structure: suffix
       languages:
-        - locale: ru
-          default: true
-          name: Русский
-          build: true
         - locale: en
+          default: true
           name: English
           build: true
           site_description: Async tools for building Mattermost bots
@@ -69,6 +66,9 @@ plugins:
             Конфигурация: Configuration
             Руководства: Guides
             Отправка сообщений: Sending messages
+        - locale: ru
+          name: Русский
+          build: true
   - search:
       lang:
         - ru
