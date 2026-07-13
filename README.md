@@ -2,6 +2,8 @@
 
 Async toolkit for building Mattermost bots.
 
+📚 **Documentation:** [English](https://iliapr.github.io/aiomost/) · [Русский](https://iliapr.github.io/aiomost/ru/)
+
 `aiomost-tools` provides:
 
 - an async Mattermost API client;
@@ -290,4 +292,3 @@ Supported variables:
 | `MATTERMOST_WS_URL` | No | Websocket URL. If omitted, it is built from `MATTERMOST_URL`. |
 | `PUBLIC_BASE_URL` | No | Public application URL for button callbacks. |
 | `REDIS_URL` | No | Redis URL for state storage. |
-
