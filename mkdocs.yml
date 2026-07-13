@@ -51,6 +51,24 @@ markdown_extensions:
       alternate_style: true
 
 plugins:
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: ru
+          default: true
+          name: Русский
+          build: true
+        - locale: en
+          name: English
+          build: true
+          site_description: Async tools for building Mattermost bots
+          nav_translations:
+            Главная: Home
+            Начало работы: Getting started
+            Установка: Installation
+            Конфигурация: Configuration
+            Руководства: Guides
+            Отправка сообщений: Sending messages
   - search:
       lang:
         - ru
