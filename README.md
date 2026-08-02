@@ -1,104 +1,88 @@
+<div align="center">
+
 # aiomost-tools
 
-Async toolkit for building Mattermost bots.
+### Async-фреймворк для Mattermost-ботов на Python
 
-📚 **Documentation:** [English](https://iliapr.github.io/aiomost/) · [Русский](https://iliapr.github.io/aiomost/ru/)
+От события в WebSocket до ответа бота — с роутингом, интерактивными кнопками,
+состояниями пользователей и готовой интеграцией с FastAPI.
 
-`aiomost-tools` provides:
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Mattermost](https://img.shields.io/badge/Mattermost-API%20v4-0058CC?logo=mattermost&logoColor=white)](https://developers.mattermost.com/integrate/reference/server/server-reference/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-ready-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-green)](./pyproject.toml)
 
-- an async Mattermost API client;
-- event routing and dispatching;
-- interactive button handling;
-- FastAPI callback integration;
-- websocket event listener;
-- optional Redis-backed state storage.
+[Документация](https://iliapr.github.io/aiomost/ru/) ·
+[English docs](https://iliapr.github.io/aiomost/) ·
+[Пример приложения](./examples/fastapi_mattermost_bot.py)
 
-- [Русский](#русский)
-- [English](#english)
+</div>
 
-## Русский
+## О проекте
 
-### Установка
+Mattermost предоставляет HTTP API и поток событий, но полноценный бот всё равно
+требует много инфраструктурного кода: авторизации WebSocket, разбора событий,
+маршрутизации, callback-обработчиков и хранения контекста диалога.
 
-Базовая установка из GitHub:
+`aiomost-tools` объединяет эти задачи в один асинхронный слой. Разработчик
+описывает поведение бота через декораторы, а библиотека управляет подключением,
+диспетчеризацией и жизненным циклом приложения.
 
-```bash
-pip install "aiomost-tools @ git+https://github.com/IliaPr/aiomost.git"
+> **Формат:** персональный open-source проект · **Роль:** проектирование API,
+> backend-разработка, тесты и документация · **Версия:** `0.1.0`
+
+## Что реализовано
+
+| Возможность | Реализация |
+| --- | --- |
+| Асинхронный API-клиент | Отправка сообщений, файлов, ответов в тредах и direct messages через `httpx` |
+| Event-driven обработка | WebSocket listener с повторным подключением  |
+| Декларативный роутинг | Декораторы событий, композиция роутеров и асинхронные фильтры |
+| Интерактивные сценарии | Кнопки Mattermost и callback endpoint в FastAPI |
+| Диалоги с контекстом | FSM-подобные состояния и данные пользователей в Redis |
+| Интеграция с backend | Готовое ASGI-приложение и подключаемый `APIRouter` |
+| Удобный public API | Высокоуровневый фасад `MattermostBotApp` и конфигурация из environment variables |
+
+## Архитектура
+
+```mermaid
+flowchart LR
+    MM[Mattermost] -->|WebSocket events| APP[MattermostBotApp]
+    MM -->|Button callback| API[FastAPI endpoint]
+    API --> APP
+    APP -->|button events| DP[Dispatcher]
+    DP --> RT[Router + filters]
+    APP -->|WebSocket events| RT
+    RT <-->|state and data| REDIS[(Redis)]
+    RT --> H[Async handlers]
+    H -->|HTTP API v4| BOT[MMBot client]
+    BOT --> MM
 ```
 
-Базовая установка включает HTTP-клиент, роутеры, диспетчер, helpers для кнопок
-и модели событий Mattermost.
+`MattermostBotApp` служит фасадом над независимыми компонентами. HTTP-клиент,
+роутеры и диспетчер можно использовать отдельно или подключить готовый FastAPI
+lifecycle, который поднимает WebSocket listener и корректно завершает фоновую
+задачу.
 
-Для обработки событий, кнопок и запуска FastAPI-приложения установи:
+## Быстрый старт
+
+Установите библиотеку с интеграциями для рабочего приложения:
 
 ```bash
 pip install "aiomost-tools[fastapi,websocket] @ git+https://github.com/IliaPr/aiomost.git"
 ```
 
-Если нужны состояния пользователей в Redis:
-
-```bash
-pip install "aiomost-tools[fastapi,websocket,redis] @ git+https://github.com/IliaPr/aiomost.git"
-```
-
-Для установки всех опциональных интеграций:
-
-```bash
-pip install "aiomost-tools[all] @ git+https://github.com/IliaPr/aiomost.git"
-```
-
-### Опциональные зависимости
-
-| Extra | Зависимости | Назначение |
-| --- | --- | --- |
-| `fastapi` | `fastapi`, `uvicorn` | HTTP endpoint для callback-ов Mattermost-кнопок. |
-| `websocket` | `websockets` | Получение событий Mattermost в реальном времени. |
-| `redis` | `redis` | Хранение пользовательских состояний. |
-| `all` | Все extras | Полная установка. |
-
-### Совместимость
-
-| Компонент | Версии |
-| --- | --- |
-| Python | `>=3.10` |
-| Mattermost API | HTTP API v4 |
-| Mattermost websocket | `/api/v4/websocket` |
-| httpx | `>=0.28.1,<0.29.0` |
-| FastAPI | `>=0.139.0,<0.140.0` |
-| Uvicorn | `>=0.30.0,<1.0.0` |
-| websockets | `>=12.0,<16.0` |
-| redis | `>=5.0.0,<7.0.0` |
-
-### Отправка сообщения
-
-```python
-from aiomost import MMBot
-
-bot = MMBot(
-    api_url="https://mattermost.example.com",
-    bot_token="MATTERMOST_BOT_TOKEN",
-)
-
-await bot.send_message(
-    channel_id="CHANNEL_ID",
-    text="Hello from aiomost",
-)
-```
-
-### Обработка событий и кнопок
+Создайте `bot.py`:
 
 ```python
 from aiomost import MattermostBotApp
 
-bot_app = MattermostBotApp(
-    mattermost_url="https://mattermost.example.com",
-    bot_token="MATTERMOST_BOT_TOKEN",
-    public_base_url="https://bot.example.com",
-)
+
+bot_app = MattermostBotApp.from_env()
 
 
 @bot_app.message()
-async def message(event, bot, app):
+async def handle_message(event, bot, app):
     post = event.data.post
 
     if post.message == "!ping":
@@ -111,184 +95,77 @@ async def message(event, bot, app):
 
 
 @bot_app.button("ping_ok")
-async def ping_button(event):
+async def handle_button(event):
     return {"update": {"message": "Button received"}}
 
 
 app = bot_app.create_fastapi_app()
 ```
 
-Запуск ASGI-приложения:
+Задайте конфигурацию и запустите ASGI-приложение:
 
 ```bash
-uvicorn your_module:app --host 0.0.0.0 --port 8000
+export MATTERMOST_URL="https://mattermost.example.com"
+export MATTERMOST_BOT_TOKEN="your-token"
+export PUBLIC_BASE_URL="https://bot.example.com"
+
+uvicorn bot:app --host 0.0.0.0 --port 8000
 ```
 
-`create_fastapi_app()` создаёт endpoints:
+Приложение начнёт получать события через WebSocket и создаст два endpoint-а:
 
-- `GET /health`
-- `POST /mattermost/action`
+- `GET /health` — проверка доступности;
+- `POST /mattermost/action` — callback интерактивных кнопок.
 
-Callback URL для интерактивных кнопок Mattermost:
+## Ключевые инженерные решения
 
-```text
-https://bot.example.com/mattermost/action
-```
+- **Разделение ответственности.** API-клиент, роутинг, диспетчеризация, модели
+  событий и state storage находятся в отдельных модулях.
+- **Необязательные интеграции.** Базовый клиент зависит только от `httpx`;
+  FastAPI, WebSocket и Redis подключаются через extras.
+- **Гибкие обработчики.** В handler передаются только те зависимости, которые
+  объявлены в его сигнатуре: `event`, `bot`, `app` или `state`.
+- **Предсказуемые диалоги.** Обработчик активного состояния имеет приоритет, а
+  смена состояния останавливает дальнейшую обработку текущего события.
+- **Устойчивое соединение.** WebSocket listener автоматически переподключается
+  с задержкой от 1 до 60 секунд.
 
-### Конфигурация через переменные окружения
+## Конфигурация
 
-```python
-from aiomost import MattermostBotApp
-
-bot_app = MattermostBotApp.from_env()
-app = bot_app.create_fastapi_app()
-```
-
-Поддерживаемые переменные:
-
-| Переменная | Обязательная | Описание |
+| Переменная | Обязательна | Назначение |
 | --- | --- | --- |
-| `MATTERMOST_URL` | Да | Базовый URL Mattermost. |
-| `MATTERMOST_BOT_TOKEN` | Да | Token бота. |
-| `MATTERMOST_WS_URL` | Нет | Websocket URL. Если не задан, строится из `MATTERMOST_URL`. |
-| `PUBLIC_BASE_URL` | Нет | Публичный URL приложения для callback-ов кнопок. |
-| `REDIS_URL` | Нет | Redis URL для state storage. |
+| `MATTERMOST_URL` | Да | Базовый URL сервера Mattermost |
+| `MATTERMOST_BOT_TOKEN` | Да | Токен бота |
+| `MATTERMOST_WS_URL` | Нет | Собственный WebSocket URL; по умолчанию вычисляется автоматически |
+| `PUBLIC_BASE_URL` | Для кнопок | Публичный URL callback-сервиса |
+| `REDIS_URL` | Для состояний | Подключение к Redis |
 
-## English
+Доступные наборы зависимостей: `fastapi`, `websocket`, `redis` и `all`.
+Подробные сценарии установки и настройки собраны в
+[документации](https://iliapr.github.io/aiomost/ru/).
 
-### Installation
-
-Base installation from GitHub:
-
-```bash
-pip install "aiomost-tools @ git+https://github.com/IliaPr/aiomost.git"
-```
-
-The base installation includes the HTTP client, routers, dispatcher, button
-helpers, and Mattermost event models.
-
-For event handling, interactive buttons, and FastAPI app integration:
+## Разработка и проверка
 
 ```bash
-pip install "aiomost-tools[fastapi,websocket] @ git+https://github.com/IliaPr/aiomost.git"
+git clone https://github.com/IliaPr/aiomost.git
+cd aiomost
+poetry install --all-extras
+poetry run python -m unittest discover -s tests
 ```
 
-If you need Redis-backed user state:
+Тесты фиксируют контракт публичного API, нормализацию URL, диспетчеризацию
+обработчиков и маршрутизацию button callback до зарегистрированного handler.
+Документация собрана на MkDocs Material и доступна на русском и английском
+языках.
 
-```bash
-pip install "aiomost-tools[fastapi,websocket,redis] @ git+https://github.com/IliaPr/aiomost.git"
-```
+## Стек
 
-To install every optional integration:
+`Python 3.10+` · `asyncio` · `httpx` · `FastAPI` · `WebSockets` · `Redis` ·
+`Poetry` · `MkDocs Material` · `unittest`
 
-```bash
-pip install "aiomost-tools[all] @ git+https://github.com/IliaPr/aiomost.git"
-```
+## Автор
 
+**IliaPr** — Python-разработчик и автор проекта.
 
-### Optional Dependencies
-
-| Extra | Dependencies | Purpose |
-| --- | --- | --- |
-| `fastapi` | `fastapi`, `uvicorn` | HTTP endpoint for Mattermost button callbacks. |
-| `websocket` | `websockets` | Real-time Mattermost event stream. |
-| `redis` | `redis` | User state storage. |
-| `all` | All extras | Full installation. |
-
-### Compatibility
-
-| Component | Versions |
-| --- | --- |
-| Python | `>=3.10` |
-| Mattermost API | HTTP API v4 |
-| Mattermost websocket | `/api/v4/websocket` |
-| httpx | `>=0.28.1,<0.29.0` |
-| FastAPI | `>=0.139.0,<0.140.0` |
-| Uvicorn | `>=0.30.0,<1.0.0` |
-| websockets | `>=12.0,<16.0` |
-| redis | `>=5.0.0,<7.0.0` |
-
-### Send a Message
-
-```python
-from aiomost import MMBot
-
-bot = MMBot(
-    api_url="https://mattermost.example.com",
-    bot_token="MATTERMOST_BOT_TOKEN",
-)
-
-await bot.send_message(
-    channel_id="CHANNEL_ID",
-    text="Hello from aiomost",
-)
-```
-
-### Event And Button Handling
-
-```python
-from aiomost import MattermostBotApp
-
-bot_app = MattermostBotApp(
-    mattermost_url="https://mattermost.example.com",
-    bot_token="MATTERMOST_BOT_TOKEN",
-    public_base_url="https://bot.example.com",
-)
-
-
-@bot_app.message()
-async def message(event, bot, app):
-    post = event.data.post
-
-    if post.message == "!ping":
-        await bot.reply_message(
-            channel_id=post.channel_id,
-            message_id=post.id,
-            text="pong",
-            actions=app.actions([("ping_ok", "OK", "ping_ok")]),
-        )
-
-
-@bot_app.button("ping_ok")
-async def ping_button(event):
-    return {"update": {"message": "Button received"}}
-
-
-app = bot_app.create_fastapi_app()
-```
-
-Run the ASGI app:
-
-```bash
-uvicorn your_module:app --host 0.0.0.0 --port 8000
-```
-
-`create_fastapi_app()` creates:
-
-- `GET /health`
-- `POST /mattermost/action`
-
-Mattermost interactive button callback URL:
-
-```text
-https://bot.example.com/mattermost/action
-```
-
-### Environment Configuration
-
-```python
-from aiomost import MattermostBotApp
-
-bot_app = MattermostBotApp.from_env()
-app = bot_app.create_fastapi_app()
-```
-
-Supported variables:
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `MATTERMOST_URL` | Yes | Mattermost base URL. |
-| `MATTERMOST_BOT_TOKEN` | Yes | Bot token. |
-| `MATTERMOST_WS_URL` | No | Websocket URL. If omitted, it is built from `MATTERMOST_URL`. |
-| `PUBLIC_BASE_URL` | No | Public application URL for button callbacks. |
-| `REDIS_URL` | No | Redis URL for state storage. |
+[GitHub](https://github.com/IliaPr) ·
+[Email](mailto:ilya.prianichnikov@gmail.com)
