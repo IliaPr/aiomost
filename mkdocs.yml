@@ -38,6 +38,7 @@ nav:
       - Отправка сообщений: guides/sending-messages.md
       - Обработка событий: guides/handling-events.md
       - Интерактивные кнопки: guides/interactive-buttons.md
+      - Состояния пользователей: guides/user-states.md
 
 markdown_extensions:
   - admonition
@@ -69,6 +70,7 @@ plugins:
             Отправка сообщений: Sending messages
             Обработка событий: Handling events
             Интерактивные кнопки: Interactive buttons
+            Состояния пользователей: User states
         - locale: ru
           name: Русский
           build: true
