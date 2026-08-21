@@ -36,6 +36,7 @@ class MattermostBotApp:
         router: Optional[Router] = None,
         dispatcher: Optional[Dispatcher] = None,
         ignore_bot_messages: bool = True,
+        verify_ssl: bool = True,
     ) -> None:
         if state_manager and redis_url:
             raise ValueError("Use either state_manager or redis_url, not both")
@@ -52,6 +53,7 @@ class MattermostBotApp:
         self.public_base_url = public_base_url.rstrip("/") if public_base_url else None
         self.websocket_url = websocket_url or self._build_websocket_url(self.mattermost_url)
         self.ignore_bot_messages = ignore_bot_messages
+        self.verify_ssl = verify_ssl
 
         self.bot = MMBot(self.mattermost_url, self.bot_token)
         self.router = router or Router(name="mattermost", state_manager=state_manager)
@@ -69,6 +71,7 @@ class MattermostBotApp:
         websocket_url_env: str = "MATTERMOST_WS_URL",
         public_base_url_env: str = "PUBLIC_BASE_URL",
         redis_url_env: str = "REDIS_URL",
+        verify_ssl_env: str = "MATTERMOST_VERIFY_SSL",
     ) -> "MattermostBotApp":
         mattermost_url = cls._require_env(mattermost_url_env)
         bot_token = cls._require_env(bot_token_env)
@@ -78,6 +81,7 @@ class MattermostBotApp:
             websocket_url=os.getenv(websocket_url_env),
             public_base_url=os.getenv(public_base_url_env),
             redis_url=os.getenv(redis_url_env),
+            verify_ssl=cls._read_bool_env(verify_ssl_env, default=True),
         )
 
     @staticmethod
@@ -86,6 +90,21 @@ class MattermostBotApp:
         if not value:
             raise RuntimeError(f"{name} environment variable is required")
         return value
+
+    @staticmethod
+    def _read_bool_env(name: str, *, default: bool) -> bool:
+        value = os.getenv(name)
+        if value is None:
+            return default
+
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+        raise RuntimeError(
+            f"{name} must be one of: true, false, 1, 0, yes, no, on, off"
+        )
 
     @staticmethod
     def _build_websocket_url(mattermost_url: str) -> str:
@@ -169,6 +188,7 @@ class MattermostBotApp:
             [self.router],
             self.websocket_url,
             self.bot_token,
+            verify_ssl=self.verify_ssl,
             bot=self.bot,
             app=self,
         )

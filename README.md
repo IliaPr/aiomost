@@ -137,6 +137,7 @@ uvicorn bot:app --host 0.0.0.0 --port 8000
 | `MATTERMOST_URL` | Да | Базовый URL сервера Mattermost |
 | `MATTERMOST_BOT_TOKEN` | Да | Токен бота |
 | `MATTERMOST_WS_URL` | Нет | Собственный WebSocket URL; по умолчанию вычисляется автоматически |
+| `MATTERMOST_VERIFY_SSL` | Нет | Проверка TLS-сертификата WebSocket; по умолчанию `true` |
 | `PUBLIC_BASE_URL` | Для кнопок | Публичный URL callback-сервиса |
 | `REDIS_URL` | Для состояний | Подключение к Redis |
 

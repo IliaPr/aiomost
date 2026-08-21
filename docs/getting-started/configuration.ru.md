@@ -110,3 +110,4 @@ MATTERMOST_WS_URL=wss://mattermost.example.com/api/v4/websocket
 | `PUBLIC_BASE_URL` | Нет | Публичный адрес FastAPI-приложения |
 | `REDIS_URL` | Нет | Подключение к Redis |
 | `MATTERMOST_WS_URL` | Нет | Пользовательский WebSocket URL |
+| `MATTERMOST_VERIFY_SSL` | Нет | Проверять TLS-сертификат WebSocket (`true` по умолчанию) |

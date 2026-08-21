@@ -12,6 +12,17 @@ logging.getLogger('websockets').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
+def _create_ssl_context(ws_url: str, verify_ssl: bool) -> ssl.SSLContext | None:
+    if not ws_url.lower().startswith("wss://"):
+        return None
+
+    ssl_context = ssl.create_default_context()
+    if not verify_ssl:
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+    return ssl_context
+
+
 class MattermostUpdate:
     def __init__(self, event_type: str, data: dict):
         self.event_type = event_type
@@ -40,10 +51,15 @@ class MattermostUpdate:
         return data
 
 
-async def mattermost_ws_listener(routers, ws_url: str, token: str, **dispatch_kwargs):
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+async def mattermost_ws_listener(
+    routers,
+    ws_url: str,
+    token: str,
+    *,
+    verify_ssl: bool = True,
+    **dispatch_kwargs,
+):
+    ssl_context = _create_ssl_context(ws_url, verify_ssl)
 
     reconnect_delay = 1
 
@@ -64,9 +80,8 @@ async def mattermost_ws_listener(routers, ws_url: str, token: str, **dispatch_kw
                     try:
                         message = await ws.recv()
                         data = json.loads(message)
-                        print(data)
-
                         event_type = data.get("event")
+                        logger.debug("Received Mattermost event: %s", event_type)
                         if event_type == "user_added":
                             try:
                                 # Универсальный парсер

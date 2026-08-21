@@ -1,8 +1,12 @@
 import asyncio
+import os
+import ssl
 import unittest
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 from aiomost import Dispatcher, MMBot, Mattermost, MattermostBotApp, Router, State, StatesGroup
+from aiomost.mattermost_websockets.mm_websockets import _create_ssl_context
 
 
 class PublicApiTest(unittest.TestCase):
@@ -76,6 +80,60 @@ class PublicApiTest(unittest.TestCase):
         )
 
         self.assertEqual(response, {"update": {"message": "confirm"}})
+
+    def test_websocket_tls_verification_is_enabled_by_default(self):
+        context = _create_ssl_context("wss://mattermost.example.com/websocket", True)
+
+        self.assertIsNotNone(context)
+        self.assertTrue(context.check_hostname)
+        self.assertEqual(context.verify_mode, ssl.CERT_REQUIRED)
+
+    def test_websocket_tls_verification_can_be_disabled_explicitly(self):
+        context = _create_ssl_context("wss://localhost/websocket", False)
+
+        self.assertIsNotNone(context)
+        self.assertFalse(context.check_hostname)
+        self.assertEqual(context.verify_mode, ssl.CERT_NONE)
+
+    def test_plain_websocket_does_not_use_ssl_context(self):
+        self.assertIsNone(_create_ssl_context("ws://localhost/websocket", True))
+
+    def test_verify_ssl_can_be_configured_from_environment(self):
+        with patch.dict(
+            os.environ,
+            {
+                "MATTERMOST_URL": "https://mattermost.example.com",
+                "MATTERMOST_BOT_TOKEN": "token",
+                "MATTERMOST_VERIFY_SSL": "false",
+            },
+            clear=True,
+        ):
+            app = MattermostBotApp.from_env()
+
+        self.assertFalse(app.verify_ssl)
+
+    def test_websocket_listener_receives_verify_ssl_setting(self):
+        app = MattermostBotApp(
+            "https://mattermost.example.com",
+            "token",
+            verify_ssl=False,
+        )
+
+        listener = AsyncMock()
+        with patch(
+            "aiomost.mattermost_websockets.mm_websockets.mattermost_ws_listener",
+            listener,
+        ):
+            asyncio.run(app.run_websocket_forever())
+
+        listener.assert_awaited_once_with(
+            [app.router],
+            app.websocket_url,
+            app.bot_token,
+            verify_ssl=False,
+            bot=app.bot,
+            app=app,
+        )
 
 
 if __name__ == "__main__":

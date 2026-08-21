@@ -113,3 +113,4 @@ All supported settings:
 | `PUBLIC_BASE_URL` | No | Public FastAPI application address |
 | `REDIS_URL` | No | Redis connection URL |
 | `MATTERMOST_WS_URL` | No | Custom WebSocket URL |
+| `MATTERMOST_VERIFY_SSL` | No | Verify the WebSocket TLS certificate (`true` by default) |
