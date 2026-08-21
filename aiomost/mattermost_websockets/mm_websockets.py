@@ -5,6 +5,7 @@ import ssl
 import websockets
 
 from aiomost.mattermost_models.posts.posts_model import MessageEvent
+from aiomost.mattermost_models.reactions.reaction_models import ReactionEvent
 from aiomost.mattermost_models.user.user_added.user_added_models import UserAddedEvent
 
 
@@ -116,6 +117,19 @@ async def mattermost_ws_listener(
                             except Exception as e:
                                 logger.error(
                                     f"❌ Ошибка обработки события 'posted': {e}")
+                                logger.debug(f"Данные события: {data}")
+
+                        elif event_type in {"reaction_added", "reaction_removed"}:
+                            try:
+                                event = ReactionEvent(**data)
+                                for router in routers:
+                                    await router.propagate_event(
+                                        event_type, event, **dispatch_kwargs
+                                    )
+                            except Exception as e:
+                                logger.error(
+                                    f"❌ Ошибка обработки события '{event_type}': {e}"
+                                )
                                 logger.debug(f"Данные события: {data}")
 
                         else:

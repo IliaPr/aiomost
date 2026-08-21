@@ -1,7 +1,10 @@
 import mimetypes
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
+from urllib.parse import quote
+
 import httpx
 
+from aiomost.mattermost_models.reactions.reaction_models import Reaction
 from aiomost.mattermost_models.user.user_info.user_info_models import User
 
 
@@ -45,6 +48,50 @@ class Mattermost:
 
 
 class MMBot(Mattermost):
+    async def add_reaction(
+        self,
+        post_id: str,
+        emoji_name: str,
+        user_id: str = "me",
+    ) -> Reaction:
+        """Add an emoji reaction to a post."""
+        response = await self.send_request(
+            "api/v4/reactions",
+            "POST",
+            json_data={
+                "user_id": user_id,
+                "post_id": post_id,
+                "emoji_name": emoji_name,
+            },
+        )
+        return Reaction(**response.json())
+
+    async def get_reactions(self, post_id: str) -> List[Reaction]:
+        """Return all emoji reactions attached to a post."""
+        encoded_post_id = quote(post_id, safe="")
+        response = await self.send_request(
+            f"api/v4/posts/{encoded_post_id}/reactions",
+            "GET",
+        )
+        return [Reaction(**reaction) for reaction in response.json()]
+
+    async def remove_reaction(
+        self,
+        post_id: str,
+        emoji_name: str,
+        user_id: str = "me",
+    ) -> Dict[str, Any]:
+        """Remove a user's emoji reaction from a post."""
+        encoded_user_id = quote(user_id, safe="")
+        encoded_post_id = quote(post_id, safe="")
+        encoded_emoji_name = quote(emoji_name, safe="")
+        response = await self.send_request(
+            "api/v4/users/"
+            f"{encoded_user_id}/posts/{encoded_post_id}/reactions/{encoded_emoji_name}",
+            "DELETE",
+        )
+        return response.json()
+
     async def reply_message(self, channel_id: str, message_id: str, text: str, actions: Optional[List[Dict]] = None):
         message = {
             "channel_id": channel_id,

@@ -128,6 +128,12 @@ class MattermostBotApp:
     def error(self, *filters: Callable) -> Callable:
         return self.router.errors(*filters)
 
+    def reaction_added(self, *filters: Callable) -> Callable:
+        return self.router.reaction_added(*filters)
+
+    def reaction_removed(self, *filters: Callable) -> Callable:
+        return self.router.reaction_removed(*filters)
+
     def event(self, event_name: str, *filters: Callable) -> Callable:
         observer = self.router.observers.get(event_name)
         if observer is None:
@@ -148,6 +154,8 @@ class MattermostBotApp:
     on_message = message
     on_user_added = user_added
     on_error = error
+    on_reaction_added = reaction_added
+    on_reaction_removed = reaction_removed
     on_event = event
     on_button = button
 
