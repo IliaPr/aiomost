@@ -39,6 +39,7 @@ Mattermost предоставляет HTTP API и поток событий, н�
 | Event-driven обработка | WebSocket listener с повторным подключением  |
 | Декларативный роутинг | Декораторы событий, композиция роутеров и асинхронные фильтры |
 | Интерактивные сценарии | Кнопки Mattermost и callback endpoint в FastAPI |
+| Реакции | Добавление, получение и удаление emoji, обработка WebSocket-событий |
 | Диалоги с контекстом | FSM-подобные состояния и данные пользователей в Redis |
 | Интеграция с backend | Готовое ASGI-приложение и подключаемый `APIRouter` |
 | Удобный public API | Высокоуровневый фасад `MattermostBotApp` и конфигурация из environment variables |
@@ -97,6 +98,12 @@ async def handle_message(event, bot, app):
 @bot_app.button("ping_ok")
 async def handle_button(event):
     return {"update": {"message": "Button received"}}
+
+
+@bot_app.reaction_added()
+async def handle_reaction(event):
+    reaction = event.data.reaction
+    print(reaction.post_id, reaction.emoji_name)
 
 
 app = bot_app.create_fastapi_app()

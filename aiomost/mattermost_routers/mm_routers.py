@@ -66,6 +66,8 @@ class Router:
         self.posted = EventObserver("posted", self)
         self.user_added = EventObserver("user_added", self)
         self.button_query = EventObserver("button_query", self)
+        self.reaction_added = EventObserver("reaction_added", self)
+        self.reaction_removed = EventObserver("reaction_removed", self)
 
         self.observers: Dict[str, EventObserver] = {
             "message": self.message,
@@ -73,6 +75,8 @@ class Router:
             "posted": self.posted,
             "user_added": self.user_added,
             "button_query": self.button_query,
+            "reaction_added": self.reaction_added,
+            "reaction_removed": self.reaction_removed,
         }
 
     async def propagate_event(self, update_type: str, event, **kwargs: Any) -> Any:

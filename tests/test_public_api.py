@@ -5,7 +5,17 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
-from aiomost import Dispatcher, MMBot, Mattermost, MattermostBotApp, Router, State, StatesGroup
+from aiomost import (
+    Dispatcher,
+    MMBot,
+    Mattermost,
+    MattermostBotApp,
+    Reaction,
+    ReactionEvent,
+    Router,
+    State,
+    StatesGroup,
+)
 from aiomost.mattermost_websockets.mm_websockets import _create_ssl_context
 
 
@@ -15,6 +25,8 @@ class PublicApiTest(unittest.TestCase):
         self.assertTrue(MMBot)
         self.assertTrue(Mattermost)
         self.assertTrue(MattermostBotApp)
+        self.assertTrue(Reaction)
+        self.assertTrue(ReactionEvent)
         self.assertTrue(Router)
         self.assertTrue(State)
         self.assertTrue(StatesGroup)
